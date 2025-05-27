@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"slices"
 	"strings"
 	"syscall"
@@ -25,7 +26,14 @@ func main() {
 			path := c.Args().First()
 			fmt.Printf("Loading mods from directory: %s\n", path)
 
-			infos, err := vsmod.ReadModInfos(os.DirFS(path), ".")
+			modPath := filepath.Join(path, "Mods")
+			disablePath := filepath.Join(path, "DisabledMods")
+			err := os.Mkdir(disablePath, 0755)
+			if err != nil {
+				return err
+			}
+
+			infos, err := vsmod.ReadModInfos(os.DirFS(modPath), ".")
 			if err != nil {
 				return err
 			}
@@ -53,11 +61,19 @@ func main() {
 				}
 
 				if readd {
-					fmt.Printf("Re-Add:\n")
+					fmt.Printf("Enable:\n")
 					printComponentsSorted(right)
+					err := moveMods(disablePath, modPath, right)
+					if err != nil {
+						return fmt.Errorf("failed to enable mods: %w", err)
+					}
 				} else {
-					fmt.Printf("Remove:\n")
+					fmt.Printf("Disable:\n")
 					printComponentsSorted(left)
+					err := moveMods(modPath, disablePath, left)
+					if err != nil {
+						return fmt.Errorf("failed to disable mods: %w", err)
+					}
 				}
 
 				fmt.Printf("Bug still present? ")
@@ -69,8 +85,12 @@ func main() {
 				} else {
 					components = left
 					readd = true
-					fmt.Printf("Remove:\n")
+					fmt.Printf("Disable:\n")
 					printComponentsSorted(right)
+					err := moveMods(modPath, disablePath, right)
+					if err != nil {
+						return fmt.Errorf("failed to disable mods: %w", err)
+					}
 				}
 			}
 		},
@@ -78,6 +98,21 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func moveMods(from, to string, components [][]*vsmod.InfoWithFilename) error {
+	for _, component := range components {
+		for _, info := range component {
+			fromMod := filepath.Join(from, info.FileName)
+			toMod := filepath.Join(to, info.FileName)
+			_ = os.Remove(toMod) // Remove the mod if it exists, to avoid conflicts
+			if err := os.Rename(fromMod, toMod); err != nil {
+				return fmt.Errorf("failed to enable mod %s: %w", info.FileName, err)
+			}
+		}
+	}
+
+	return nil
 }
 
 func printComponent(component []*vsmod.InfoWithFilename) {

@@ -1,6 +1,9 @@
 package vsmod
 
 import (
+	"cmp"
+	"slices"
+
 	"github.com/dominikbraun/graph"
 )
 
