@@ -34,6 +34,10 @@ func main() {
 
 			var readd bool
 			for {
+				if len(components) == 0 {
+					fmt.Print("No components found, exiting.\n")
+					return nil
+				}
 				if len(components) == 1 {
 					fmt.Print("Found bug in component:\n")
 					printComponent(components[0])
