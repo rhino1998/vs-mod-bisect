@@ -5,7 +5,7 @@ import (
 )
 
 func GraphFromInfos(infos map[string]*Info) (graph.Graph[ID, *Info], error) {
-	g := graph.New[ID, *Info](func(i *Info) ID { return i.ModID })
+	g := graph.New[ID, *Info](func(i *Info) ID { return i.ModID }, graph.Directed())
 
 	for _, info := range infos {
 		if err := g.AddVertex(info); err != nil {
