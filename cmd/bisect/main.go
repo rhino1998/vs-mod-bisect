@@ -1,11 +1,13 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"slices"
 	"syscall"
 
 	"github.com/rhino1998/vs-mod-bisect/pkg/vsmod"
@@ -51,14 +53,10 @@ func main() {
 
 				if readd {
 					fmt.Printf("Re-Add:\n")
-					for _, comp := range right {
-						printComponent(comp)
-					}
+					printComponentsSorted(right)
 				} else {
 					fmt.Printf("Remove:\n")
-					for _, comp := range left {
-						printComponent(comp)
-					}
+					printComponentsSorted(left)
 				}
 
 				fmt.Printf("Bug still present? ")
@@ -69,6 +67,8 @@ func main() {
 					readd = false
 				} else {
 					components = left
+					fmt.Printf("Remove:\n")
+					printComponentsSorted(right)
 				}
 			}
 		},
@@ -81,6 +81,22 @@ func main() {
 func printComponent(component []*vsmod.InfoWithFilename) {
 	fmt.Print("--\n")
 	for _, info := range component {
+		fmt.Printf("- %s (%s)\n", info.FileName, info.Name)
+	}
+}
+
+func printComponentsSorted(components [][]*vsmod.InfoWithFilename) {
+	var s []*vsmod.InfoWithFilename
+	for _, component := range components {
+		for _, info := range component {
+			s = append(s, info)
+		}
+	}
+	slices.SortFunc(s, func(a, b *vsmod.InfoWithFilename) int {
+		return cmp.Compare(a.FileName, b.FileName)
+	})
+
+	for _, info := range s {
 		fmt.Printf("- %s (%s)\n", info.FileName, info.Name)
 	}
 }
