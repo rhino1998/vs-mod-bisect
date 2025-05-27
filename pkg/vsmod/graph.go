@@ -50,7 +50,8 @@ func Bisect(infos map[string]*Info) (map[string]*Info, map[string]*Info, error) 
 
 	midPoint := len(infos) / 2
 
-	var left, right map[string]*Info
+	left := make(map[string]*Info)
+	right := make(map[string]*Info)
 	for _, id := range ids {
 		if len(left) < midPoint {
 			left[pathByID[id]] = infoByID[id]
