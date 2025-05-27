@@ -41,6 +41,7 @@ func main() {
 				if len(components) == 1 {
 					fmt.Print("Found bug in component:\n")
 					printComponent(components[0])
+					return nil
 				}
 
 				left, right, err := vsmod.BisectComponents(components)
