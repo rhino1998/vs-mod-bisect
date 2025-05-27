@@ -56,7 +56,7 @@ func ReadModInfos(fsys fs.FS, path string) (map[string]*Info, error) {
 		}
 
 		if strings.HasSuffix(d.Name(), ".zip") {
-			info, err := ReadZipModInfo(fsys, filepath.Join(path, d.Name()))
+			info, err := ReadZipModInfo(fsys, path)
 			if err != nil {
 				return fmt.Errorf("failed to read mod info from %s: %w", d.Name(), err)
 			}
