@@ -2,12 +2,13 @@ package vsmod
 
 import (
 	"archive/zip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"strings"
 
-	"github.com/rogpeppe/rjson"
+	"github.com/tidwall/jsonc"
 )
 
 func ReadZipModInfo(fsys fs.FS, path string) (*Info, error) {
@@ -39,8 +40,13 @@ func ReadZipModInfo(fsys fs.FS, path string) (*Info, error) {
 	}
 	defer infoFile.Close()
 
+	data, err := io.ReadAll(infoFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read modinfo.json: %w", err)
+	}
+
 	var info Info
-	err = rjson.NewDecoder(infoFile).Decode(&info)
+	err = json.Unmarshal(jsonc.ToJSON(data), &info)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode modinfo.json: %w", err)
 	}
