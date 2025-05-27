@@ -86,6 +86,10 @@ func BisectComponents(components [][]*InfoWithFilename) ([][]*InfoWithFilename, 
 		total += len(comp)
 	}
 
+	slices.SortFunc(components, func(a, b []*InfoWithFilename) int {
+		return cmp.Compare(len(a), len(b))
+	})
+
 	for _, comp := range components {
 		if len(left) < len(components)/2 {
 			left = append(left, comp)
