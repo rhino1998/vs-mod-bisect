@@ -29,7 +29,7 @@ func main() {
 			modPath := filepath.Join(path, "Mods")
 			disablePath := filepath.Join(path, "DisabledMods")
 			err := os.Mkdir(disablePath, 0755)
-			if err != nil {
+			if err != nil && !os.IsExist(err) {
 				return err
 			}
 
