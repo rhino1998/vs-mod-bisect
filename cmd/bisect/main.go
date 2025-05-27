@@ -68,6 +68,7 @@ func main() {
 					readd = false
 				} else {
 					components = left
+					readd = true
 					fmt.Printf("Remove:\n")
 					printComponentsSorted(right)
 				}
