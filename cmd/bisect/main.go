@@ -28,6 +28,7 @@ func main() {
 				return err
 			}
 
+			var readd bool
 			for {
 				if len(infos) == 1 {
 					for _, info := range infos {
@@ -40,23 +41,50 @@ func main() {
 					return err
 				}
 
-				remove := make([]string, 0, len(left)+len(right))
-				for path := range left {
-					remove = append(remove, path)
-				}
-				slices.Sort(remove)
+				if readd {
+					remove := make([]string, 0, len(right))
+					for path := range right {
+						remove = append(remove, path)
+					}
+					slices.Sort(remove)
 
-				fmt.Printf("Remove:\n")
-				for _, path := range remove {
-					fmt.Printf("- %s\n", path)
+					fmt.Printf("Re-Add:\n")
+					for _, path := range remove {
+						fmt.Printf("- %s\n", path)
+					}
+				} else {
+					remove := make([]string, 0, len(left)+len(right))
+					for path := range left {
+						remove = append(remove, path)
+					}
+					slices.Sort(remove)
+
+					fmt.Printf("Remove:\n")
+					for _, path := range remove {
+						fmt.Printf("- %s\n", path)
+					}
 				}
 
+				fmt.Printf("Bug still present? ")
 				var resp string
-				fmt.Scanf("Bug still present? %s", &resp) // Wait for user input
+				fmt.Scanf("%s", &resp) // Wait for user input
 				if resp == "y" || resp == "yes" {
 					infos = right
+					readd = false
 				} else {
 					infos = left
+					readd = true
+
+					remove := make([]string, 0, len(left)+len(right))
+					for path := range left {
+						remove = append(remove, path)
+					}
+					slices.Sort(remove)
+
+					fmt.Printf("Remove:\n")
+					for _, path := range remove {
+						fmt.Printf("- %s\n", path)
+					}
 				}
 			}
 		},

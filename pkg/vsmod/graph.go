@@ -1,6 +1,8 @@
 package vsmod
 
 import (
+	"slices"
+
 	"github.com/dominikbraun/graph"
 )
 
@@ -44,6 +46,7 @@ func Bisect(infos map[string]*Info) (map[string]*Info, map[string]*Info, error) 
 	ids, err := graph.StableTopologicalSort(g, func(a, b ID) bool {
 		return a < b
 	})
+	slices.Reverse(ids)
 	if err != nil {
 		return nil, nil, err
 	}
