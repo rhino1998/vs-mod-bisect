@@ -51,13 +51,11 @@ func main() {
 				if readd {
 					fmt.Printf("Re-Add:\n")
 					for _, comp := range right {
-						fmt.Print("--")
 						printComponent(comp)
 					}
 				} else {
 					fmt.Printf("Remove:\n")
 					for _, comp := range left {
-						fmt.Print("--")
 						printComponent(comp)
 					}
 				}
@@ -80,6 +78,7 @@ func main() {
 }
 
 func printComponent(component []*vsmod.InfoWithFilename) {
+	fmt.Print("--\n")
 	for _, info := range component {
 		fmt.Printf("- %s (%s)\n", info.FileName, info.Name)
 	}
