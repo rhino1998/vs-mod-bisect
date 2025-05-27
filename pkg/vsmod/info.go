@@ -5,7 +5,7 @@ type ID string
 type Version string
 
 type Info struct {
-	Type         string         `json:"type"`
+	Type         any            `json:"type"`
 	ModID        ID             `json:"modid"`
 	Name         string         `json:"name"`
 	Authors      []string       `json:"authors"`
