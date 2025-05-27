@@ -15,7 +15,7 @@ func GraphFromInfos(infos map[string]*Info) (graph.Graph[ID, *Info], error) {
 	for _, info := range infos {
 		for depID := range info.Dependencies {
 			switch depID {
-			case "game":
+			case "game", "survival", "creative", "vanilla":
 				continue
 			}
 
