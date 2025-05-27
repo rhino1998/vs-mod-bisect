@@ -78,7 +78,7 @@ func main() {
 
 				fmt.Printf("Bug still present? ")
 				var resp string
-				fmt.Scanf("%s", &resp) // Wait for user input
+				fmt.Scanf("%s\n", &resp) // Wait for user input
 				if resp == "y" || resp == "yes" {
 					components = right
 					readd = false
