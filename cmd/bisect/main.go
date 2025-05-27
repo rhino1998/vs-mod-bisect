@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"slices"
@@ -16,7 +17,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	(&cli.Command{
+	err := (&cli.Command{
 		Name: "bisect",
 		Action: func(ctx context.Context, c *cli.Command) error {
 			path := c.Args().First()
@@ -60,4 +61,7 @@ func main() {
 			}
 		},
 	}).Run(ctx, os.Args)
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
