@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"strings"
 	"syscall"
 
 	"github.com/rhino1998/vs-mod-bisect/pkg/vsmod"
@@ -93,7 +94,7 @@ func printComponentsSorted(components [][]*vsmod.InfoWithFilename) {
 		}
 	}
 	slices.SortFunc(s, func(a, b *vsmod.InfoWithFilename) int {
-		return cmp.Compare(a.FileName, b.FileName)
+		return cmp.Compare(strings.ToLower(a.FileName), strings.ToLower(b.FileName))
 	})
 
 	for _, info := range s {
