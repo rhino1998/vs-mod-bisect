@@ -4,8 +4,8 @@ import (
 	"github.com/dominikbraun/graph"
 )
 
-func GraphFromInfos(infos []*InfoWithFilename, opts ...func(*graph.Traits)) (graph.Graph[ID, *InfoWithFilename], error) {
-	g := graph.New[ID, *InfoWithFilename](func(i *InfoWithFilename) ID { return i.ModID }, opts...)
+func GraphFromInfos(infos []*InfoWithFilename, directed bool) (graph.Graph[ID, *InfoWithFilename], error) {
+	g := graph.New[ID, *InfoWithFilename](func(i *InfoWithFilename) ID { return i.ModID }, graph.Directed())
 
 	for _, info := range infos {
 		if err := g.AddVertex(info); err != nil {
@@ -22,6 +22,11 @@ func GraphFromInfos(infos []*InfoWithFilename, opts ...func(*graph.Traits)) (gra
 			if err := g.AddEdge(info.ModID, depID); err != nil {
 				return nil, err
 			}
+			if !directed {
+				if err := g.AddEdge(depID, info.ModID); err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 
@@ -34,7 +39,7 @@ func SortedComponents(infos []*InfoWithFilename) ([][]*InfoWithFilename, error) 
 		infoByID[info.ModID] = info
 	}
 
-	g, err := GraphFromInfos(infos)
+	g, err := GraphFromInfos(infos, false)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +57,7 @@ func SortedComponents(infos []*InfoWithFilename) ([][]*InfoWithFilename, error) 
 			component = append(component, infoByID[id])
 		}
 
-		dg, err := GraphFromInfos(component, graph.Directed())
+		dg, err := GraphFromInfos(component, true)
 		if err != nil {
 			return nil, err
 		}
