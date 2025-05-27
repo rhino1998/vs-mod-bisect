@@ -20,6 +20,8 @@ func main() {
 		Name: "bisect",
 		Action: func(ctx context.Context, c *cli.Command) error {
 			path := c.Args().First()
+			fmt.Printf("Loading mods from directory: %s\n", path)
+
 			infos, err := vsmod.ReadModInfos(os.DirFS(path), ".")
 			if err != nil {
 				return err
