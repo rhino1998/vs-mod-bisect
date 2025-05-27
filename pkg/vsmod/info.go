@@ -15,3 +15,8 @@ type Info struct {
 	Version      Version        `json:"version"`
 	Dependencies map[ID]Version `json:"dependencies"`
 }
+
+type InfoWithFilename struct {
+	Info
+	FileName string
+}

@@ -1,13 +1,11 @@
 package vsmod
 
 import (
-	"slices"
-
 	"github.com/dominikbraun/graph"
 )
 
-func GraphFromInfos(infos map[string]*Info) (graph.Graph[ID, *Info], error) {
-	g := graph.New[ID, *Info](func(i *Info) ID { return i.ModID }, graph.Directed())
+func GraphFromInfos(infos []*InfoWithFilename, opts ...func(*graph.Traits)) (graph.Graph[ID, *InfoWithFilename], error) {
+	g := graph.New[ID, *InfoWithFilename](func(i *InfoWithFilename) ID { return i.ModID }, opts...)
 
 	for _, info := range infos {
 		if err := g.AddVertex(info); err != nil {
@@ -30,38 +28,65 @@ func GraphFromInfos(infos map[string]*Info) (graph.Graph[ID, *Info], error) {
 	return g, nil
 }
 
-func Bisect(infos map[string]*Info) (map[string]*Info, map[string]*Info, error) {
-	infoByID := make(map[ID]*Info, len(infos))
-	pathByID := make(map[ID]string, len(infos))
-	for path, info := range infos {
+func SortedComponents(infos []*InfoWithFilename) ([][]*InfoWithFilename, error) {
+	infoByID := make(map[ID]*InfoWithFilename, len(infos))
+	for _, info := range infos {
 		infoByID[info.ModID] = info
-		pathByID[info.ModID] = path
 	}
 
 	g, err := GraphFromInfos(infos)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	ids, err := graph.StableTopologicalSort(g, func(a, b ID) bool {
-		return a < b
-	})
-	slices.Reverse(ids)
+	compIDs, err := graph.StronglyConnectedComponents(g)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	midPoint := len(infos) / 2
+	var components [][]*InfoWithFilename
 
-	left := make(map[string]*Info)
-	right := make(map[string]*Info)
-	for _, id := range ids {
-		if len(left) < midPoint {
-			left[pathByID[id]] = infoByID[id]
+	for _, comp := range compIDs {
+		component := make([]*InfoWithFilename, 0, len(comp))
+		for _, id := range comp {
+			component = append(component, infoByID[id])
+		}
+
+		dg, err := GraphFromInfos(component, graph.Directed())
+		if err != nil {
+			return nil, err
+		}
+
+		order, err := graph.StableTopologicalSort(dg, func(a, b ID) bool { return a < b })
+		if err != nil {
+			return nil, err
+		}
+
+		for i, id := range order {
+			component[i] = infoByID[id]
+		}
+
+		components = append(components, component)
+	}
+
+	return components, nil
+}
+
+func BisectComponents(components [][]*InfoWithFilename) ([][]*InfoWithFilename, [][]*InfoWithFilename, error) {
+	var left [][]*InfoWithFilename
+	var right = [][]*InfoWithFilename{}
+
+	var total int
+	for _, comp := range components {
+		total += len(comp)
+	}
+
+	for _, comp := range components {
+		if len(left) < len(components)/2 {
+			left = append(left, comp)
 		} else {
-			right[pathByID[id]] = infoByID[id]
+			right = append(right, comp)
 		}
 	}
-
 	return left, right, nil
 }

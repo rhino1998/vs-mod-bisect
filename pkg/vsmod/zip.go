@@ -54,8 +54,8 @@ func ReadZipModInfo(fsys fs.FS, path string) (*Info, error) {
 	return &info, nil
 }
 
-func ReadModInfos(fsys fs.FS, path string) (map[string]*Info, error) {
-	infos := make(map[string]*Info)
+func ReadModInfos(fsys fs.FS, path string) ([]*InfoWithFilename, error) {
+	var infos []*InfoWithFilename
 	err := fs.WalkDir(fsys, path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -67,7 +67,7 @@ func ReadModInfos(fsys fs.FS, path string) (map[string]*Info, error) {
 				return fmt.Errorf("failed to read mod info from %s: %w", d.Name(), err)
 			}
 
-			infos[d.Name()] = info
+			infos = append(infos, &InfoWithFilename{Info: *info, FileName: d.Name()})
 		}
 
 		return nil

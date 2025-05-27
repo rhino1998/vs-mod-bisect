@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"slices"
 	"syscall"
 
 	"github.com/rhino1998/vs-mod-bisect/pkg/vsmod"
@@ -28,40 +27,34 @@ func main() {
 				return err
 			}
 
+			components, err := vsmod.SortedComponents(infos)
+			if err != nil {
+				return err
+			}
+
 			var readd bool
 			for {
-				if len(infos) == 1 {
-					for _, info := range infos {
-						fmt.Printf("Found bug in mod: %s\n", info.Name)
-					}
+				if len(components) == 1 {
+					fmt.Print("Found bug in component:\n")
+					printComponent(components[0])
 				}
 
-				left, right, err := vsmod.Bisect(infos)
+				left, right, err := vsmod.BisectComponents(components)
 				if err != nil {
 					return err
 				}
 
 				if readd {
-					remove := make([]string, 0, len(right))
-					for path := range right {
-						remove = append(remove, path)
-					}
-					slices.Sort(remove)
-
 					fmt.Printf("Re-Add:\n")
-					for _, path := range remove {
-						fmt.Printf("- %s\n", path)
+					for _, comp := range right {
+						fmt.Print("--")
+						printComponent(comp)
 					}
 				} else {
-					remove := make([]string, 0, len(left)+len(right))
-					for path := range left {
-						remove = append(remove, path)
-					}
-					slices.Sort(remove)
-
 					fmt.Printf("Remove:\n")
-					for _, path := range remove {
-						fmt.Printf("- %s\n", path)
+					for _, comp := range left {
+						fmt.Print("--")
+						printComponent(comp)
 					}
 				}
 
@@ -69,27 +62,21 @@ func main() {
 				var resp string
 				fmt.Scanf("%s", &resp) // Wait for user input
 				if resp == "y" || resp == "yes" {
-					infos = right
+					components = right
 					readd = false
 				} else {
-					infos = left
-					readd = true
-
-					remove := make([]string, 0, len(left)+len(right))
-					for path := range left {
-						remove = append(remove, path)
-					}
-					slices.Sort(remove)
-
-					fmt.Printf("Remove:\n")
-					for _, path := range remove {
-						fmt.Printf("- %s\n", path)
-					}
+					components = left
 				}
 			}
 		},
 	}).Run(ctx, os.Args)
 	if err != nil {
 		log.Fatalln(err)
+	}
+}
+
+func printComponent(component []*vsmod.InfoWithFilename) {
+	for _, info := range component {
+		fmt.Printf("- %s (%s)\n", info.FileName, info.Name)
 	}
 }
