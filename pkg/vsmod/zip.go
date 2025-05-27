@@ -2,11 +2,12 @@ package vsmod
 
 import (
 	"archive/zip"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"strings"
+
+	"github.com/rogpeppe/rjson"
 )
 
 func ReadZipModInfo(fsys fs.FS, path string) (*Info, error) {
@@ -39,7 +40,7 @@ func ReadZipModInfo(fsys fs.FS, path string) (*Info, error) {
 	defer infoFile.Close()
 
 	var info Info
-	err = json.NewDecoder(infoFile).Decode(&info)
+	err = rjson.NewDecoder(infoFile).Decode(&info)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode modinfo.json: %w", err)
 	}
